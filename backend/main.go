@@ -126,6 +126,7 @@ func main() {
 	Candidates["Bob"] = 0
 	Candidates["Charlie"] = 0
 	Candidates["David"] = 0
+	Candidates["Jane"] = 0
 
 
 	for i := 1; i <= 10; i++ {
