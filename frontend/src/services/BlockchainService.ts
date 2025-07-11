@@ -10,7 +10,7 @@ export class BlockchainService {
   }
 
   private initializeSystem() {
-    // Create genesis block
+    // Create genesis block i.e first block block 0
     const genesisBlock: Block = {
       PrevHash: "",
       CurrentHash: "",
@@ -79,7 +79,7 @@ export class BlockchainService {
     // Check if voter has already voted
     for (let i = 0; i < this.blockchain.length; i++) {
       for (let j = 0; j < this.blockchain[i].Votes.length; j++) {
-        if (this.blockchain[i].Votes[j].VoterID === voterID) {
+        if (this.blockchain[i].Votes[j].voterPublicKey === voterID.toString()) {
           return {
             success: false,
             message: `Voter ${voterID} has already voted.`
@@ -89,7 +89,7 @@ export class BlockchainService {
     }
 
     // Create vote and new block
-    const vote: Vote = { VoterID: voterID, Candidate: candidate };
+    const vote: Vote = { id: '${voterID}-${Date.now()}', ballotId: "legacy", voterPublicKey: voterID.toString(), selectedOption: Object.keys(this.candidates).indexOf(candidate), timestamp: Date.now() };
     const lastBlock = this.blockchain[this.blockchain.length - 1];
     const newBlock: Block = {
       PrevHash: lastBlock.CurrentHash,
@@ -156,7 +156,7 @@ export class BlockchainService {
   hasVoterVoted(voterID: number): boolean {
     for (const block of this.blockchain) {
       for (const vote of block.Votes) {
-        if (vote.VoterID === voterID) {
+        if (vote.voterPublicKey === voterID.toString()) {
           return true;
         }
       }

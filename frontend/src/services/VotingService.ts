@@ -20,7 +20,9 @@ export class VotingService {
       publicKey: keyPair.publicKey,
       privateKey: keyPair.privateKey,
       hasVoted: false,
-      registrationTime: Date.now()
+      registrationTime: Date.now(),
+      name: "",
+      email: "",
     };
 
     this.voters.set(voterId, voter);
@@ -42,7 +44,9 @@ export class VotingService {
       title,
       description,
       options,
+      creatorPublicKey: this.adminKey,
       createdAt: Date.now(),
+      expiresAt: Date.now() + 7 * 24 * 60 * 60 * 1000, // 7 days from now
       isActive: true
     };
 
