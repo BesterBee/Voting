@@ -108,6 +108,16 @@ const loadBlockchain = useCallback(async () => {
 
     dispatch({ type: 'SET_BLOCKCHAIN', payload: mappedBlocks });
 
+    dispatch({ type: 'SET_VOTERS', payload: blockchainData.voters });
+    dispatch({ type: 'SET_CANDIDATES', payload: blockchainData.candidates });
+    dispatch({ type: 'SET_ERROR', payload: null });
+    dispatch({ type: 'SET_LOADING', payload: false });
+
+    // Load audit trail if available
+    blockchainData.auditEvents?.forEach((event: AuditEvent) => {
+      dispatch({ type: 'ADD_AUDIT_EVENT', payload: event });
+    });
+
   } catch (error) {
     dispatch({ type: 'SET_ERROR', payload: 'Failed to load blockchain data' });
     console.error('Error loading blockchain:', error);

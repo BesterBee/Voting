@@ -31,15 +31,15 @@ export function Dashboard() {
     return true;
   };
 
-  const stats = {
-    totalVoters: state.voters.length,
-    totalVotes: state.votes.length,
-    totalCandidates: state.candidates.length,
-    blockchainBlocks: state.blockchain.length,
-    votingActive: true,
-    blockchainIntegrity: isChainValid() ? 100 : 0
+const stats = {
+  totalVoters: Array.isArray(state.voters) ? state.voters.length : 0,
+  totalCandidates: Array.isArray(state.candidates) ? state.candidates.length : 0,
+  totalVotes: Array.isArray(state.votes) ? state.votes.length : 0,
+  blockchainBlocks: state.blockchain.length,
+  votingActive: true,
+  blockchainIntegrity: isChainValid() ? 100 : 0
+};
 
-  };
 
   type StatCardProps = {
     title: string;

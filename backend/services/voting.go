@@ -1,3 +1,4 @@
+// backend/services/voting.go
 package services
 
 import (
@@ -5,40 +6,47 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"time"
 	"voting/models"
 )
 
-var Blockchain []models.Block
-var Candidates map[string]int
-var VoterReg map[int]bool
-var VotersWhoVoted map[int]bool
+// ───────── global state ─────────
+var Blockchain       []models.Block
+var Candidates       map[string]int
+var Voters          []models.Voter 
+var VoterReg         map[int]bool
+var VotersWhoVoted   map[int]bool
+var AuditTrail       []models.AuditEvent // OPTIONAL: can leave nil
+var VotingActive     = true
 
+// ───────── initialization ───────
 func Init() {
-	Candidates = make(map[string]int)
-	VoterReg = make(map[int]bool)
-	VotersWhoVoted = make(map[int]bool)
-	Blockchain = []models.Block{}
+	Candidates       = make(map[string]int)
+	VoterReg         = make(map[int]bool)
+	VotersWhoVoted   = make(map[int]bool)
+	Blockchain       = []models.Block{}
 
+	// demo candidates
 	Candidates["Alice"] = 0
-	Candidates["Bob"] = 0
-	Candidates["Jane"] = 0
-	Candidates["John"] = 0
+	Candidates["Bob"]   = 0
+	Candidates["Jane"]  = 0
+	Candidates["John"]  = 0
 
-	genesisBlock := models.Block{
+	genesis := models.Block{
+		ID:          "0",
 		PrevHash:    "",
 		CurrentHash: "",
 		Votes:       nil,
 	}
-	genesisBlock.CurrentHash = GenerateHash(genesisBlock)
-	Blockchain = append(Blockchain, genesisBlock)
-
+	genesis.CurrentHash = GenerateHash(genesis)
+	Blockchain = append(Blockchain, genesis)
 }
 
+// ───────── helpers ──────────────
 func GenerateHash(block models.Block) string {
 	data, _ := json.Marshal(block)
 	hash := sha256.Sum256(data)
 	return hex.EncodeToString(hash[:])
-
 }
 
 func CalculateHash(block models.Block, vote models.Vote) string {
@@ -46,11 +54,18 @@ func CalculateHash(block models.Block, vote models.Vote) string {
 	return fmt.Sprintf("%x", hash)
 }
 
+// ───────── API‑facing funcs ─────
 func RegisterVoter(voterID int) bool {
-	if _, exists := VoterReg[voterID]; exists {
+	if VoterReg[voterID] {
 		return false
 	}
 	VoterReg[voterID] = true
+	
+	Voters =append(Voters, models.Voter{
+		ID: voterID,
+		HasVoted: false,
+		RegisteredAt: time.Now().Unix(),
+	})
 	return true
 }
 
@@ -58,29 +73,25 @@ func CastVote(voterID int, candidate string) (bool, string) {
 	if !VoterReg[voterID] {
 		return false, "Voter is not registered."
 	}
-
-	if _, exists := Candidates[candidate]; !exists {
+	if _, ok := Candidates[candidate]; !ok {
 		return false, "Candidate does not exist."
 	}
-
 	if VotersWhoVoted[voterID] {
 		return false, "Voter has already voted."
 	}
 
-	VotersWhoVoted[voterID] = true
-
 	vote := models.Vote{VoterID: voterID, Candidate: candidate}
-	lastBlock := Blockchain[len(Blockchain)-1]
+	last := Blockchain[len(Blockchain)-1]
 	newBlock := models.Block{
-		PrevHash:    lastBlock.CurrentHash,
+		ID:          fmt.Sprintf("%d", len(Blockchain)),
+		PrevHash:    last.CurrentHash,
 		CurrentHash: "",
 		Votes:       []models.Vote{vote},
 	}
 	newBlock.CurrentHash = GenerateHash(newBlock)
-	Blockchain = append(Blockchain, newBlock)
 
+	Blockchain = append(Blockchain, newBlock)
 	Candidates[candidate]++
 	VotersWhoVoted[voterID] = true
-
 	return true, "Vote cast successfully."
 }

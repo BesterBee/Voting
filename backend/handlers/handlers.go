@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"github.com/gin-gonic/gin"
 	"voting/services"
+	"voting/models"
 )
 
 func RegisterVoterHandler(c *gin.Context) {
@@ -43,5 +44,24 @@ func GetCandidatesHandler(c *gin.Context) {
 }
 
 func GetBlockchainHandler(c *gin.Context) {
-	c.JSON(http.StatusOK, services.Blockchain)
+	totalVotes := 0
+	for _, block := range services.Blockchain {
+		totalVotes += len(block.Votes)
+	}
+
+	response := models.BlockchainResponse{
+		Blocks:      services.Blockchain,
+		Voters:      services.Voters,
+		Candidates:  services.CandidatesSlice(),
+		AuditEvents: services.AuditTrail,
+		Stats: models.Stats{
+			TotalVoters:      len(services.Voters),
+			TotalVotes:       totalVotes,
+			TotalCandidates:  len(services.Candidates),
+			BlockchainBlocks: len(services.Blockchain),
+			VotingActive:     services.VotingActive,
+		},
+	}
+
+	c.JSON(http.StatusOK, response)
 }
