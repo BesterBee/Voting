@@ -15,4 +15,5 @@ func main() {
 	r.GET("/candidates", handlers.GetCandidatesHandler)
 	r.GET("/blockchain", handlers.GetBlockchainHandler)
 	r.Run(":8080")
+	
 }

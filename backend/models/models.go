@@ -7,6 +7,7 @@ type Vote struct {
 }
 
 type Block struct {
+	id          string `json:"id"`
 	PrevHash    string `json:"prevHash"`
 	CurrentHash string `json:"currentHash"`
 	Votes       []Vote `json:"votes"`
