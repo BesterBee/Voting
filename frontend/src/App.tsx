@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { VotingProvider} from './contexts/BlockchainContext';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { VotingProvider } from './contexts/BlockchainContext';
 import { Header } from './components/Header';
 import { Navigation } from './components/Navigation';
 import { Dashboard } from './components/Dashboard';
@@ -7,50 +7,24 @@ import { VoterRegistration } from './components/VoterRegistration';
 import { VoteCasting } from './components/VoteCasting';
 import { Results } from './components/Results';
 import { AuditTrail } from './components/AuditTrail';
-import { User } from './types/blockchain';
-import { useVoting } from './contexts/useVoting';
 
 function AppContent() {
-  const { dispatch } = useVoting();
-  const [activeTab, setActiveTab] = useState('dashboard');
-
-  useEffect(() => {
-    // Simulate user login
-    const mockUser: User = {
-      id: '1',
-      name: 'Election Observer',
-      role: 'observer',
-      email: 'observer@voting.com'
-    };
-    dispatch({ type: 'SET_USER', payload: mockUser });
-  }, [dispatch]);
-
-  const renderContent = () => {
-    switch (activeTab) {
-      case 'dashboard':
-        return <Dashboard />;
-      case 'register':
-        return <VoterRegistration />;
-      case 'vote':
-        return <VoteCasting />;
-      case 'results':
-        return <Results />;
-      case 'audit':
-        return <AuditTrail />;
-      default:
-        return <Dashboard />;
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
       <div className="flex">
         <div className="w-64 min-h-screen">
-          <Navigation activeTab={activeTab} setActiveTab={setActiveTab} />
+          <Navigation />
         </div>
         <div className="flex-1 p-8">
-          {renderContent()}
+          <Routes>
+            <Route path="/" element={<Navigate to="/dashboard" />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/register" element={<VoterRegistration />} />
+            <Route path="/vote" element={<VoteCasting />} />
+            <Route path="/results" element={<Results />} />
+            <Route path="/audit" element={<AuditTrail />} />
+          </Routes>
         </div>
       </div>
     </div>
@@ -60,7 +34,9 @@ function AppContent() {
 function App() {
   return (
     <VotingProvider>
-      <AppContent />
+      <Router>
+        <AppContent />
+      </Router>
     </VotingProvider>
   );
 }

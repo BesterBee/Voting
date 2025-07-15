@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Vote, User, Shield, AlertCircle, CheckCircle } from 'lucide-react';
 import { useVoting } from '../contexts/useVoting';
+import { Candidate } from '../types/blockchain';
 
 export function VoteCasting() {
   const { state, castVote, loadCandidates } = useVoting();
@@ -8,10 +9,19 @@ export function VoteCasting() {
   const [voterId, setVoterId] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [candidates, setCandidates] = useState<Candidate[]>([]);
 
   useEffect(() => {
     loadCandidates();
   }, [loadCandidates]);
+
+  useEffect(() => {
+    if (Array.isArray(state.candidates)) {
+      setCandidates(state.candidates);
+    } else {
+      setCandidates(Object.values(state.candidates));
+    }
+  }, [state.candidates]);
 
   const handleVoteSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,7 +31,7 @@ export function VoteCasting() {
     setSuccess(false);
 
     try {
-      await castVote(voterId, selectedCandidate);
+      await castVote(Number(voterId), selectedCandidate); // voterId as number
       setSelectedCandidate('');
       setVoterId('');
       setSuccess(true);
@@ -88,12 +98,12 @@ export function VoteCasting() {
               Select Your Candidate
             </label>
             <div className="space-y-3">
-              {state.candidates.length === 0 ? (
+              {candidates.length === 0 ? (
                 <div className="text-center py-8">
                   <p className="text-gray-500">Loading candidates...</p>
                 </div>
               ) : (
-                state.candidates.map((candidate) => (
+                candidates.map((candidate) => (
                   <div
                     key={candidate.id}
                     className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${

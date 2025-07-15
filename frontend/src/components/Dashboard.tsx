@@ -32,6 +32,7 @@ export function Dashboard() {
   };
 
 const stats = {
+  
   totalVoters: Array.isArray(state.voters) ? state.voters.length : 0,
   totalCandidates: Array.isArray(state.candidates) ? state.candidates.length : 0,
   totalVotes: Array.isArray(state.votes) ? state.votes.length : 0,
@@ -68,6 +69,9 @@ const stats = {
       </div>
     </div>
   );
+
+  const candidates = Array.isArray(state.candidates) ? state.candidates : [];
+  console.log("candidates", candidates);
 
   return (
     <div className="space-y-6">
@@ -123,7 +127,7 @@ const stats = {
         <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Candidate Results</h3>
           <div className="space-y-4">
-            {state.candidates.slice(0, 5).map((candidate) => (
+            {candidates.slice(0, 5).map((candidate) => (
               <div key={candidate.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                 <div className="flex items-center space-x-3">
                   <UserCheck className="w-5 h-5 text-gray-400" />
@@ -142,7 +146,7 @@ const stats = {
                 </div>
               </div>
             ))}
-            {state.candidates.length === 0 && (
+            {candidates.length === 0 && (
               <p className="text-gray-500 text-center py-8">No candidates available</p>
             )}
           </div>

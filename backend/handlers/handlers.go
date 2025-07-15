@@ -25,13 +25,13 @@ func RegisterVoterHandler(c *gin.Context) {
 func CastVoteHandler(c *gin.Context) {
 	var req struct {
 		VoterID   int    `json:"voterId"`
-		Candidate string `json:"candidate"`
+		CandidateID string `json:"candidateId"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
 		return
 	}
-	success, msg := services.CastVote(req.VoterID, req.Candidate)
+	success, msg := services.CastVote(req.VoterID, req.CandidateID)
 	if success {
 		c.JSON(http.StatusOK, gin.H{"message": msg})
 	} else {

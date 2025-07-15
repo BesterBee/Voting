@@ -8,7 +8,7 @@ export interface VotingBlock {
 }
 
 export interface VoteData {
-  voterId: string;
+  voterId: number;
   candidateId: string;
   timestamp: number;
   transactionId: string;

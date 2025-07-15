@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { BarChart3, Trophy, Users, TrendingUp } from 'lucide-react';
 import { useVoting } from '../contexts/useVoting';
+import { Candidate } from '../types/blockchain';
 
 export function Results() {
   const { state, loadCandidates } = useVoting();
@@ -12,9 +13,21 @@ export function Results() {
     return () => clearInterval(interval);
   }, [loadCandidates]);
 
-  const totalVotes = state.candidates.reduce((sum, candidate) => sum + candidate.votes, 0);
-  const sortedCandidates = [...state.candidates].sort((a, b) => b.votes - a.votes);
-  const winner = sortedCandidates[0];
+  // Always derive candidates as an array from state
+  const candidates: Candidate[] = Array.isArray(state.candidates)
+    ? state.candidates
+    : Object.values(state.candidates ?? {});
+
+  const totalVotes = candidates.reduce((sum, candidate) => sum + candidate.votes, 0);
+  const sortedCandidates = [...candidates].sort((a, b) => b.votes - a.votes);
+  const winner =
+    totalVotes > 0
+      ? sortedCandidates.find(candidate => candidate.votes === Math.max(...sortedCandidates.map(c => c.votes)))
+      : undefined;
+
+  const maxVotes = Math.max(...candidates.map(c => c.votes));
+  const leaders = candidates.filter(c => c.votes === maxVotes);
+  const isTie = leaders.length > 1;
 
   const getPercentage = (votes: number) => {
     return totalVotes > 0 ? Math.round((votes / totalVotes) * 100) : 0;
@@ -47,7 +60,7 @@ export function Results() {
             <Users className="w-5 h-5 text-blue-500" />
             <span className="text-sm text-gray-600">Candidates</span>
           </div>
-          <p className="text-xl font-bold text-gray-900">{state.candidates.length}</p>
+          <p className="text-xl font-bold text-gray-900">{candidates.length}</p>
         </div>
         <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-200">
           <div className="flex items-center space-x-2">
@@ -58,10 +71,14 @@ export function Results() {
         </div>
         <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-200">
           <div className="flex items-center space-x-2">
-            <Trophy className="w-5 h-5 text-yellow-500" />
+            {!isTie && winner && winner.votes > 0 && (
+              <Trophy className="w-5 h-5 text-yellow-500" />
+            )}
             <span className="text-sm text-gray-600">Leading</span>
           </div>
-          <p className="text-xl font-bold text-gray-900">{winner?.name || 'N/A'}</p>
+          <p className="text-xl font-bold text-gray-900">
+            {totalVotes > 0 && winner ? winner.name : 'N/A'}
+          </p>
         </div>
         <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-200">
           <div className="flex items-center space-x-2">
@@ -87,7 +104,9 @@ export function Results() {
               <div key={candidate.id} className="relative">
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center space-x-3">
-                    {index === 0 && <Trophy className="w-5 h-5 text-yellow-500" />}
+                    {!isTie && candidate.votes === maxVotes && candidate.votes > 0 && (
+                      <Trophy className="w-5 h-5 text-yellow-500" />
+                    )}
                     <div>
                       <h4 className="font-semibold text-gray-900">{candidate.name}</h4>
                       <p className="text-sm text-gray-600">{candidate.party}</p>

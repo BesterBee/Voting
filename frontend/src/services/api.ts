@@ -41,7 +41,7 @@ export interface RegisterVoterRequest {
 }
 
 export interface CastVoteRequest {
-  voterId: string;
+  voterId: number;
   candidateId: string;
 }
 

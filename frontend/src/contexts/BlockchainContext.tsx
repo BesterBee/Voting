@@ -42,7 +42,7 @@ export const VotingContext = createContext<{
   loadCandidates: () => Promise<void>;
   loadBlockchain: () => Promise<void>;
   registerVoter: (name: string, email: string, nationalId: string) => Promise<void>;
-  castVote: (voterId: string, candidateId: string) => Promise<void>;
+  castVote: (voterId: number, candidateId: string) => Promise<void>;
 } | null>(null);
 
 function votingReducer(state: VotingState, action: VotingAction): VotingState {
@@ -163,22 +163,22 @@ const loadBlockchain = useCallback(async () => {
     }
   };
 
-  const castVote = async (voterId: string, candidateId: string) => {
+  const castVote = async (voterId: number, candidateId: string) => {
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
       dispatch({ type: 'SET_ERROR', payload: null });
       const response = await apiService.castVote({ voterId, candidateId });
-      
+
       const voteData: VoteData = {
-        voterId,
+        voterId: Number(voterId), 
         candidateId,
         timestamp: Date.now(),
         transactionId: response.transactionId || Math.random().toString(36).substring(7)
       };
-      
+
       dispatch({ type: 'ADD_VOTE', payload: voteData });
-      dispatch({ 
-        type: 'ADD_AUDIT_EVENT', 
+      dispatch({
+        type: 'ADD_AUDIT_EVENT',
         payload: {
           id: Math.random().toString(36).substring(7),
           timestamp: Date.now(),
@@ -188,8 +188,7 @@ const loadBlockchain = useCallback(async () => {
           blockHash: response.blockHash || 'pending'
         }
       });
-      
-      // Refresh candidates to get updated vote counts
+
       await loadCandidates();
     } catch (error) {
       dispatch({ type: 'SET_ERROR', payload: 'Failed to cast vote' });
